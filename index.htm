@@ -1,35 +1,907 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Chat & Math AI</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Buzzy OS X</title>
+
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+<style>
+
+:root{
+    --bg:#070b14;
+    --bg2:#111827;
+    --panel:rgba(20,24,35,.78);
+    --border:rgba(255,255,255,.06);
+    --text:#f3f4f6;
+    --muted:#9ca3af;
+    --accent:#ffffff;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body,html{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Inter,sans-serif;
+    background:
+    radial-gradient(circle at top,#2b354d 0%,#070b14 65%);
+    color:var(--text);
+}
+
+/* FAST ANIMATIONS */
+
+button,
+.panel,
+.nav-btn,
+.card,
+.msg,
+.hero{
+    transition:.18s;
+}
+
+/* LOADER */
+
+#loader{
+    position:fixed;
+    inset:0;
+    background:#070b14;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    gap:20px;
+    z-index:999999;
+}
+
+.ring{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    border:4px solid rgba(255,255,255,.08);
+    border-top:4px solid white;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* BG EFFECTS */
+
+.glow{
+    position:fixed;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:.18;
+    z-index:-1;
+}
+
+.g1{
+    width:400px;
+    height:400px;
+    background:#4462ff;
+    top:-120px;
+    right:-120px;
+}
+
+.g2{
+    width:350px;
+    height:350px;
+    background:#ffffff;
+    bottom:-150px;
+    left:-120px;
+}
+
+/* AUTH */
+
+#auth{
+    position:fixed;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.auth-box{
+    width:min(92vw,420px);
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:30px;
+    padding:35px;
+    backdrop-filter:blur(10px);
+}
+
+.auth-title{
+    font-size:55px;
+    font-weight:900;
+    margin-bottom:10px;
+}
+
+.auth-sub{
+    color:var(--muted);
+    margin-bottom:25px;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    border:none;
+    outline:none;
+    border-radius:16px;
+    margin-bottom:14px;
+    background:#111827;
+    color:white;
+    border:1px solid rgba(255,255,255,.04);
+}
+
+.btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:16px;
+    background:white;
+    color:black;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    position:fixed;
+    top:50%;
+    left:18px;
+    transform:translateY(-50%);
+    width:250px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:30px;
+    padding:18px;
+    backdrop-filter:blur(10px);
+    z-index:100;
+}
+
+.logo{
+    font-size:30px;
+    font-weight:900;
+    margin-bottom:18px;
+}
+
+.online{
+    background:rgba(255,255,255,.06);
+    padding:12px;
+    border-radius:15px;
+    margin-bottom:18px;
+    font-size:14px;
+}
+
+.nav-btn{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:18px;
+    margin-bottom:10px;
+    background:transparent;
+    color:white;
+    text-align:left;
+    font-size:15px;
+    cursor:pointer;
+}
+
+.nav-btn:hover{
+    background:rgba(255,255,255,.06);
+}
+
+.active{
+    background:rgba(255,255,255,.1);
+}
+
+/* HERO */
+
+.hero{
+    position:absolute;
+    top:50%;
+    left:58%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    width:min(90vw,900px);
+}
+
+.hero h1{
+    font-size:clamp(80px,11vw,210px);
+    font-weight:900;
+    letter-spacing:-8px;
+    line-height:.9;
+}
+
+.hero p{
+    font-size:clamp(18px,2vw,28px);
+    color:var(--muted);
+    margin-top:20px;
+}
+
+/* PAGES */
+
+.page{
+    position:absolute;
+    inset:0;
+    display:none;
+    overflow:auto;
+    padding-left:310px;
+    padding-top:35px;
+    padding-bottom:40px;
+}
+
+.active-page{
+    display:block;
+}
+
+.panel{
+    width:min(92vw,1200px);
+    margin:auto;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:30px;
+    padding:25px;
+    backdrop-filter:blur(10px);
+}
+
+/* GRID */
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:rgba(255,255,255,.04);
+    border-radius:24px;
+    padding:22px;
+    border:1px solid rgba(255,255,255,.05);
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.launch{
+    margin-top:18px;
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:14px;
+    background:white;
+    color:black;
+    font-weight:800;
+    cursor:pointer;
+}
+
+/* CHAT */
+
+.msgs{
+    height:60vh;
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-bottom:18px;
+}
+
+.msg{
+    max-width:75%;
+    padding:15px 18px;
+    border-radius:18px;
+}
+
+.me{
+    align-self:flex-end;
+    background:white;
+    color:black;
+}
+
+.other{
+    background:#161d2d;
+}
+
+/* MUSIC */
+
+iframe{
+    width:100%;
+    height:500px;
+    border:none;
+    border-radius:22px;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+.sidebar{
+    width:90px;
+}
+
+.logo,
+.online{
+    display:none;
+}
+
+.nav-btn{
+    text-align:center;
+    font-size:0;
+}
+
+.page{
+    padding-left:110px;
+}
+
+.hero{
+    left:56%;
+}
+
+}
+
+@media(max-width:650px){
+
+.sidebar{
+    width:95%;
+    height:80px;
+    bottom:10px;
+    top:auto;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    border-radius:28px;
+}
+
+.nav-btn{
+    margin:0;
+    padding:10px;
+}
+
+.page{
+    padding-left:0;
+    padding-bottom:110px;
+    padding-top:20px;
+}
+
+.hero{
+    left:50%;
+    width:95%;
+}
+
+.hero h1{
+    font-size:70px;
+}
+
+.panel{
+    width:95%;
+}
+
+iframe{
+    height:250px;
+}
+
+}
+
+</style>
 </head>
+
 <body>
 
-    <div id="auth-box" class="container">
-        <h2>Join Global Chat</h2>
-        <input type="text" id="username" placeholder="Choose Username">
-        <button onclick="login()">Start Chatting</button>
-    </div>
+<!-- LOADER -->
 
-    <div id="chat-box-container" class="container" style="display:none;">
-        <div class="profile-header">
-            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="user-img" width="50">
-            <h3 id="current-user">User</h3>
-        </div>
+<div id="loader">
+    <div class="ring"></div>
+    <h1>BUZZY</h1>
+</div>
 
-        <div id="messages"></div>
+<!-- BACKGROUND -->
 
-        <div class="input-row">
-            <input type="text" id="message-input" placeholder="Type a message or 'math: 2+2'...">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-    </div>
+<div class="glow g1"></div>
+<div class="glow g2"></div>
 
-    <script src="script.js"></script>
+<!-- AUTH -->
+
+<div id="auth">
+
+<div class="auth-box">
+
+<div class="auth-title">BUZZY</div>
+
+<div class="auth-sub">
+The next generation social launcher.
+</div>
+
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
+<button class="btn" onclick="signup()">
+Create Account
+</button>
+
+<br><br>
+
+<button class="btn" onclick="login()">
+Login
+</button>
+
+</div>
+
+</div>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+<div class="logo">BUZZY</div>
+
+<div class="online" id="onlineText">
+Connecting...
+</div>
+
+<button class="nav-btn active" onclick="openPage('home',this)">
+🏠 Home
+</button>
+
+<button class="nav-btn" onclick="openPage('games',this)">
+🎮 Games
+</button>
+
+<button class="nav-btn" onclick="openPage('browser',this)">
+🌐 Browse
+</button>
+
+<button class="nav-btn" onclick="openPage('ai',this)">
+🤖 AI
+</button>
+
+<button class="nav-btn" onclick="openPage('chat',this)">
+💬 Chat
+</button>
+
+<button class="nav-btn" onclick="openPage('music',this)">
+🎵 Music
+</button>
+
+</div>
+
+<!-- HOME -->
+
+<div class="hero" id="home">
+    <h1>BUZZY</h1>
+    <p>Fast. Social. Futuristic.</p>
+</div>
+
+<!-- GAMES -->
+
+<div class="page" id="games">
+
+<div class="panel">
+
+<h1 style="margin-bottom:25px;">Games Hub</h1>
+
+<div class="grid">
+
+<div class="card">
+<h2>Krunker</h2>
+<p>Fast paced FPS shooter.</p>
+
+<button class="launch"
+onclick="window.open('https://krunker.io')">
+Launch
+</button>
+</div>
+
+<div class="card">
+<h2>Poki</h2>
+<p>Popular browser games.</p>
+
+<button class="launch"
+onclick="window.open('https://poki.com')">
+Launch
+</button>
+</div>
+
+<div class="card">
+<h2>Tetris</h2>
+<p>Classic puzzle game.</p>
+
+<button class="launch"
+onclick="window.open('https://tetris.com/play-tetris')">
+Launch
+</button>
+</div>
+
+<div class="card">
+<h2>Agar.io</h2>
+<p>Grow your cell.</p>
+
+<button class="launch"
+onclick="window.open('https://agar.io')">
+Launch
+</button>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- BROWSER -->
+
+<div class="page" id="browser">
+
+<div class="panel">
+
+<h1 style="margin-bottom:20px;">
+Search
+</h1>
+
+<input id="search"
+placeholder="Search anything...">
+
+<button class="launch"
+onclick="searchWeb()">
+Search
+</button>
+
+</div>
+
+</div>
+
+<!-- AI -->
+
+<div class="page" id="ai">
+
+<div class="panel">
+
+<h1 style="margin-bottom:20px;">
+Buzzy AI
+</h1>
+
+<div class="msgs" id="aiMsgs">
+
+<div class="msg other">
+Hello. I am Buzzy AI.
+</div>
+
+</div>
+
+<input id="aiInput"
+placeholder="Ask anything...">
+
+<button class="launch"
+onclick="askAI()">
+Send
+</button>
+
+</div>
+
+</div>
+
+<!-- CHAT -->
+
+<div class="page" id="chat">
+
+<div class="panel">
+
+<h1 style="margin-bottom:20px;">
+Global Chat
+</h1>
+
+<div class="msgs" id="chatMsgs"></div>
+
+<input id="chatInput"
+placeholder="Send a message">
+
+<button class="launch"
+onclick="sendChat()">
+Send
+</button>
+
+</div>
+
+</div>
+
+<!-- MUSIC -->
+
+<div class="page" id="music">
+
+<div class="panel">
+
+<h1 style="margin-bottom:20px;">
+Music
+</h1>
+
+<iframe
+loading="lazy"
+src="https://www.youtube.com/embed/jfKfPfyJRdk">
+</iframe>
+
+</div>
+
+</div>
+
+<script>
+
+const firebaseConfig={
+databaseURL:
+"https://buzzy-guest-default-rtdb.firebaseio.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+const db=firebase.database();
+
+let username="Guest";
+
+/* FAST LOADER */
+
+window.addEventListener("load",()=>{
+
+const loader=document.getElementById("loader");
+
+loader.style.opacity="0";
+
+setTimeout(()=>{
+loader.remove();
+},250);
+
+});
+
+/* AUTH */
+
+function signup(){
+
+const email=
+document.getElementById("email").value;
+
+const password=
+document.getElementById("password").value;
+
+auth
+.createUserWithEmailAndPassword(
+email,
+password
+)
+
+.then(()=>{
+
+username=email.split("@")[0];
+
+document.getElementById("auth")
+.style.display="none";
+
+document.getElementById("onlineText")
+.innerText=username+" online";
+
+})
+
+.catch(e=>alert(e.message));
+
+}
+
+function login(){
+
+const email=
+document.getElementById("email").value;
+
+const password=
+document.getElementById("password").value;
+
+auth
+.signInWithEmailAndPassword(
+email,
+password
+)
+
+.then(()=>{
+
+username=email.split("@")[0];
+
+document.getElementById("auth")
+.style.display="none";
+
+document.getElementById("onlineText")
+.innerText=username+" online";
+
+})
+
+.catch(e=>alert(e.message));
+
+}
+
+/* PAGE SWITCH */
+
+function openPage(id,btn){
+
+document.querySelectorAll(".page")
+.forEach(p=>
+p.classList.remove("active-page")
+);
+
+document.querySelectorAll(".nav-btn")
+.forEach(b=>
+b.classList.remove("active")
+);
+
+if(id==="home"){
+
+document.getElementById("home")
+.style.display="block";
+
+}else{
+
+document.getElementById("home")
+.style.display="none";
+
+document.getElementById(id)
+.classList.add("active-page");
+
+}
+
+btn.classList.add("active");
+
+}
+
+/* SEARCH */
+
+function searchWeb(){
+
+let q=
+document.getElementById("search").value;
+
+if(!q)return;
+
+window.open(
+"https://www.google.com/search?q="
++encodeURIComponent(q)
+);
+
+}
+
+/* AI */
+
+async function askAI(){
+
+const input=
+document.getElementById("aiInput");
+
+const q=input.value.trim();
+
+if(!q)return;
+
+const msgs=
+document.getElementById("aiMsgs");
+
+msgs.innerHTML+=`
+<div class="msg me">${q}</div>
+`;
+
+input.value="";
+
+const thinking=
+document.createElement("div");
+
+thinking.className="msg other";
+
+thinking.innerText="Thinking...";
+
+msgs.appendChild(thinking);
+
+msgs.scrollTop=msgs.scrollHeight;
+
+try{
+
+const res=await fetch(
+"https://api.affiliateplus.xyz/api/chatbot?message="
++encodeURIComponent(q)
+);
+
+const data=await res.json();
+
+thinking.innerText=
+data.message||"No response.";
+
+}catch{
+
+thinking.innerText="AI offline.";
+
+}
+
+msgs.scrollTop=msgs.scrollHeight;
+
+}
+
+/* CHAT */
+
+db.ref("buzzyXChat")
+.limitToLast(50)
+.on("child_added",snap=>{
+
+const d=snap.val();
+
+const msgs=
+document.getElementById("chatMsgs");
+
+msgs.innerHTML+=`
+<div class="msg ${d.user===username?'me':'other'}">
+<strong>${d.user}</strong><br>
+${d.msg}
+</div>
+`;
+
+msgs.scrollTop=msgs.scrollHeight;
+
+});
+
+function sendChat(){
+
+const input=
+document.getElementById("chatInput");
+
+const msg=input.value.trim();
+
+if(!msg)return;
+
+db.ref("buzzyXChat").push({
+
+user:username,
+msg,
+time:Date.now()
+
+});
+
+input.value="";
+
+}
+
+/* ENTER KEY */
+
+document.addEventListener("keydown",e=>{
+
+if(e.key==="Enter"){
+
+if(document.activeElement.id==="chatInput"){
+sendChat();
+}
+
+if(document.activeElement.id==="aiInput"){
+askAI();
+}
+
+}
+
+});
+
+</script>
+
 </body>
 </html>
+```
