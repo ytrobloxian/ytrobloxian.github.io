@@ -3,33 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Chat</title>
+    <title>Global Chat & Math AI</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
-    <div id="auth-container" class="box">
-        <h2 id="auth-title">Create Account</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="handleAuth()" id="auth-btn">Sign Up</button>
-        <p onclick="toggleAuth()" id="toggle-text">Already have an account? Login</p>
+    <div id="auth-box" class="container">
+        <h2>Join Global Chat</h2>
+        <input type="text" id="username" placeholder="Choose Username">
+        <button onclick="login()">Start Chatting</button>
     </div>
 
-    <div id="chat-container" class="box" style="display:none;">
-        <div class="profile-section">
-            <img src="https://via.placeholder.com/50" id="profile-pic" alt="Profile">
-            <input type="file" id="image-input" accept="image/*" onchange="loadPhoto(event)">
-            <h3 id="display-name">Username</h3>
+    <div id="chat-box-container" class="container" style="display:none;">
+        <div class="profile-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="user-img" width="50">
+            <h3 id="current-user">User</h3>
         </div>
-        
-        <div id="chat-box">
-            <p><strong>System:</strong> Welcome to Global Chat!</p>
-        </div>
-        
-        <div class="input-area">
-            <input type="text" id="msg" placeholder="Type a message...">
-            <button onclick="sendMsg()">Send</button>
+
+        <div id="messages"></div>
+
+        <div class="input-row">
+            <input type="text" id="message-input" placeholder="Type a message or 'math: 2+2'...">
+            <button onclick="sendMessage()">Send</button>
         </div>
     </div>
 
