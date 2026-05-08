@@ -1,10 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My GitHub Site</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Hello World!</h1>
-    <p>I built this website for free on GitHub.</p>
+
+    <div id="auth-container" class="box">
+        <h2 id="auth-title">Create Account</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="handleAuth()" id="auth-btn">Sign Up</button>
+        <p onclick="toggleAuth()" id="toggle-text">Already have an account? Login</p>
+    </div>
+
+    <div id="chat-container" class="box" style="display:none;">
+        <div class="profile-section">
+            <img src="https://via.placeholder.com/50" id="profile-pic" alt="Profile">
+            <input type="file" id="image-input" accept="image/*" onchange="loadPhoto(event)">
+            <h3 id="display-name">Username</h3>
+        </div>
+        
+        <div id="chat-box">
+            <p><strong>System:</strong> Welcome to Global Chat!</p>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="msg" placeholder="Type a message...">
+            <button onclick="sendMsg()">Send</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
